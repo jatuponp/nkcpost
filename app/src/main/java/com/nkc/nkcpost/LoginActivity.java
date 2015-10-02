@@ -31,10 +31,6 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.android.volley.toolbox.Volley;
-import com.nkc.nkcpost.R;
-import com.nkc.nkcpost.AppConfig;
-import com.nkc.nkcpost.AppController;
 import com.nkc.nkcpost.helper.SQLiteHandler;
 import com.nkc.nkcpost.helper.SessionManager;
 
