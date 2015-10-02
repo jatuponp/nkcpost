@@ -1,5 +1,9 @@
 package com.nkc.nkcpost;
 
+import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.renderscript.Allocation;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -8,6 +12,11 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.DynamicDrawableSpan;
+import android.text.style.ImageSpan;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -50,10 +59,6 @@ public class MainActivity extends AppCompatActivity {
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
-
-    }
-
-    public void setOnSearchClickListener(View.OnClickListener listener){
 
     }
 
@@ -104,17 +109,47 @@ public class MainActivity extends AppCompatActivity {
             return 3;
         }
 
+        Drawable myDrawable; //Drawable you want to display
+        String title;
+
         @Override
         public CharSequence getPageTitle(int position) {
             switch (position) {
                 case 0:
-                    return "New";
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        myDrawable = getResources().getDrawable(R.mipmap.ic_email_white_24dp, getApplicationContext().getTheme());
+                    } else {
+                        myDrawable = getResources().getDrawable(R.mipmap.ic_email_white_24dp);
+                    }
+                    title = "New";
+                    break;
                 case 1:
-                    return "History";
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        myDrawable = getResources().getDrawable(R.mipmap.ic_history_white_24dp, getApplicationContext().getTheme());
+                    } else {
+                        myDrawable = getResources().getDrawable(R.mipmap.ic_history_white_24dp);
+                    }
+                    title = "History";
+                    break;
                 case 2:
-                    return "About";
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        myDrawable = getResources().getDrawable(R.mipmap.ic_info_outline_white_24dp, getApplicationContext().getTheme());
+                    } else {
+                        myDrawable = getResources().getDrawable(R.mipmap.ic_info_outline_white_24dp);
+                    }
+                    title = "About";
+                    break;
             }
-            return null;
+            SpannableString sb = new SpannableString("   " + title); // space added before text for convenience
+            //try {
+                myDrawable.setBounds(5, 5, myDrawable.getIntrinsicWidth(), myDrawable.getIntrinsicHeight());
+                ImageSpan span = new ImageSpan(myDrawable, DynamicDrawableSpan.ALIGN_BOTTOM);
+                sb.setSpan(span, 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            //} catch (Exception e) {
+                // TODO: handle exception
+           // }
+
+            return sb;
         }
     }
 
@@ -144,12 +179,21 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            TextView textView = (TextView) rootView.findViewById(R.id.section_label);
-            textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
-            return rootView;
+        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+            switch (getArguments().getInt(ARG_SECTION_NUMBER)){
+                case 1:
+                    View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+                    TextView textView = (TextView) rootView.findViewById(R.id.section_label);
+                    textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
+                    return rootView;
+                case 2:
+                    View rootView1 = inflater.inflate(R.layout.fragment_main, container, false);
+                    return rootView1;
+                case 3:
+                    View rootView2 = inflater.inflate(R.layout.fragment_about, container, false);
+                    return rootView2;
+            }
+            return null;
         }
     }
 }
