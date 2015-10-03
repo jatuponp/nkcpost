@@ -1,5 +1,6 @@
 package com.nkc.nkcpost;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -24,6 +25,19 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -100,7 +114,19 @@ public class MainActivity extends AppCompatActivity {
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
-            return PlaceholderFragment.newInstance(position + 1);
+            //getInbox("5470890004657","0");
+            //return PlaceholderFragment.newInstance(position + 1);
+            switch (position){
+                case 0:
+                    getInbox("5470890004657","0");
+                    return NewFragment.newInstance("saf","adf");
+                case 1:
+                    return NewFragment.newInstance("af","asdf");
+                case 2:
+                    return AboutFragment.newInstance();
+
+            }
+            return null;
         }
 
         @Override
@@ -142,12 +168,12 @@ public class MainActivity extends AppCompatActivity {
             }
             SpannableString sb = new SpannableString("   " + title); // space added before text for convenience
             //try {
-                myDrawable.setBounds(5, 5, myDrawable.getIntrinsicWidth(), myDrawable.getIntrinsicHeight());
-                ImageSpan span = new ImageSpan(myDrawable, DynamicDrawableSpan.ALIGN_BOTTOM);
-                sb.setSpan(span, 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            myDrawable.setBounds(5, 5, myDrawable.getIntrinsicWidth(), myDrawable.getIntrinsicHeight());
+            ImageSpan span = new ImageSpan(myDrawable, DynamicDrawableSpan.ALIGN_BOTTOM);
+            sb.setSpan(span, 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             //} catch (Exception e) {
-                // TODO: handle exception
-           // }
+            // TODO: handle exception
+            // }
 
             return sb;
         }
@@ -180,20 +206,70 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            switch (getArguments().getInt(ARG_SECTION_NUMBER)){
-                case 1:
-                    View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-                    TextView textView = (TextView) rootView.findViewById(R.id.section_label);
-                    textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
-                    return rootView;
-                case 2:
-                    View rootView1 = inflater.inflate(R.layout.fragment_main, container, false);
-                    return rootView1;
-                case 3:
-                    View rootView2 = inflater.inflate(R.layout.fragment_about, container, false);
-                    return rootView2;
-            }
-            return null;
+            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+            TextView textView = (TextView) rootView.findViewById(R.id.section_label);
+            textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
+            return rootView;
         }
+    }
+
+    private void getInbox(final String StudentId, final String Status) {
+        // Tag used to cancel the request
+        String tag_string_req = "req_login";
+
+        StringRequest strReq = new StringRequest(Request.Method.POST, AppConfig.URL_LOGIN, new Response.Listener<String>() {
+
+            @Override
+            public void onResponse(String response) {
+                //Log.d(TAG, "Login Response: " + response.toString());
+
+                try {
+                    JSONObject jObj = new JSONObject(response);
+                    System.out.println(jObj);
+                    boolean error = jObj.getBoolean("error");
+
+                    // Check for error node in json
+                    if (!error) {
+                        // user successfully logged in
+                        // Create login session
+                        finish();
+                    } else {
+                        // Error in login. Get the error message
+                        String errorMsg = jObj.getString("error_msg");
+                        Toast.makeText(getApplicationContext(),
+                                errorMsg, Toast.LENGTH_LONG).show();
+                    }
+                } catch (JSONException e) {
+                    // JSON error
+                    e.printStackTrace();
+                    Toast.makeText(getApplicationContext(), "Json error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                }
+
+            }
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                //Log.e(TAG, "Login Error: " + error.getMessage());
+                Toast.makeText(getApplicationContext(),
+                        error.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        }) {
+
+            @Override
+            protected Map<String, String> getParams() {
+                // Posting parameters to login url
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("studentid", StudentId);
+                params.put("status", Status);
+
+                return params;
+            }
+
+        };
+
+        // Adding request to request queue
+        AppController.getInstance().addToRequestQueue(strReq, tag_string_req);
+
     }
 }

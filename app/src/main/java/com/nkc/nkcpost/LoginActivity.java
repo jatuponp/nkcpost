@@ -9,20 +9,15 @@ import android.app.Activity;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request.Method;
-import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.VolleyLog;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 
 import org.json.JSONException;
@@ -33,6 +28,8 @@ import java.util.Map;
 
 import com.nkc.nkcpost.helper.SQLiteHandler;
 import com.nkc.nkcpost.helper.SessionManager;
+import com.nkc.nkcpost.AppConfig;
+import com.nkc.nkcpost.AppController;
 
 public class LoginActivity extends Activity {
     private static final String TAG = LoginActivity.class.getSimpleName();
@@ -136,8 +133,7 @@ public class LoginActivity extends Activity {
                         db.addUser(name, username, uid, created_at);
 
                         // Launch main activity
-                        Intent intent = new Intent(LoginActivity.this,
-                                MainActivity.class);
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                         startActivity(intent);
                         finish();
                     } else {
@@ -172,13 +168,6 @@ public class LoginActivity extends Activity {
                 params.put("password", password);
 
                 return params;
-            }
-
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                HashMap<String, String> headers = new HashMap<String, String>();
-                headers.put("TOKEN", "99KI9Gj68CgCf70deM22Ka64chef2C40Gm2lFJ2J0G9JkDaaDAcbFfd19MfacGf3FFm8CM1hG0eDiIk8");
-                return headers;
             }
 
         };
