@@ -1,4 +1,5 @@
 package com.nkc.nkcpost;
+
 import com.nkc.nkcpost.R;
 import com.nkc.nkcpost.AppController;
 import com.nkc.nkcpost.model.Mail;
@@ -12,9 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
-
-import com.android.volley.toolbox.ImageLoader;
-import com.android.volley.toolbox.NetworkImageView;
 /**
  * Created by Jumpon-pc on 4/10/2558.
  */

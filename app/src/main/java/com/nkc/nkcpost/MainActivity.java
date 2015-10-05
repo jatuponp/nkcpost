@@ -53,9 +53,6 @@ public class MainActivity extends AppCompatActivity {
      */
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    public static final String KEY_USERID = "userid";
-    public static final String KEY_STATUS = "status";
-
 
     private SectionsPagerAdapter mSectionsPagerAdapter;
 
@@ -123,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
             //getInbox("5470890004657","0");
-            //return PlaceholderFragment.newInstance(position + 1, "5470890004657", "0");
+            //return PlaceholderFragment.newInstance(position, "5470890004657", "0");
             String state = "0";
             String userid = "";
             switch (position){
@@ -203,8 +200,10 @@ public class MainActivity extends AppCompatActivity {
          * fragment.
          */
         private static final String ARG_SECTION_NUMBER = "section_number";
-        private static String ARG_USERID = null;
-        private static String ARG_STATUS = null;
+        private static final String ARG_USERID = "userid";
+        private static final String ARG_STATUS = "status";
+        private static final String KEY_USERID = "userid";
+        private static final String KEY_STATUS = "status";
 
         private List<Mail> mailList = new ArrayList<Mail>();
         private ListView listView;
@@ -238,7 +237,18 @@ public class MainActivity extends AppCompatActivity {
             pDialog.setMessage("Loading ...");
             pDialog.show();
 
-            JsonArrayRequest mailReq = new JsonArrayRequest(Method.POST, AppConfig.URL_INBOX + "?userid=" + getArguments().getString(ARG_USERID) + "&status=" + getArguments().getString(ARG_STATUS),
+            System.out.println("User ID = " + getArguments().getString(ARG_USERID));
+            System.out.println(getArguments().getString(ARG_STATUS));
+
+            JSONObject obj = new JSONObject();
+            try {
+                obj.put("userid", getArguments().getString(ARG_USERID));
+                obj.put("status", getArguments().getString(ARG_STATUS));
+            }catch (JSONException e){
+                System.out.print(e.getMessage());
+            }
+
+            JsonArrayRequest mailReq = new JsonArrayRequest(Method.POST, AppConfig.URL_INBOX, obj,
                     new Response.Listener<JSONArray>() {
                         @Override
                         public void onResponse(JSONArray response) {
@@ -278,10 +288,15 @@ public class MainActivity extends AppCompatActivity {
                 protected Map<String, String> getParams(){
                     // Posting parameters to getInbox url
                     Map<String, String> params = new HashMap<String, String>();
-                    params.put(KEY_USERID, getArguments().getString(ARG_USERID));
-                    params.put(KEY_STATUS, getArguments().getString(ARG_STATUS));
+                    params.put(ARG_USERID, getArguments().getString(ARG_USERID));
+                    params.put(ARG_STATUS, getArguments().getString(ARG_STATUS));
                     return params;
                 }
+//
+//                @Override
+//                public int getMethod() {
+//                    return Method.POST;
+//                }
             };
 
             AppController.getInstance().addToRequestQueue(mailReq, "getInbox");
