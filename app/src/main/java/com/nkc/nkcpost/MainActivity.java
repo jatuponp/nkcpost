@@ -66,8 +66,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+//        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+//        setSupportActionBar(toolbar);
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
@@ -127,15 +127,15 @@ public class MainActivity extends AppCompatActivity {
                 case 0:
                     state = "0";
                     userid = "563410045-6";
-                    break;
+                    return PlaceholderFragment.newInstance(userid, state);
                 case 1:
                     state = "1";
                     userid = "563410045-6";
-                    break;
+                    return PlaceholderFragment.newInstance(userid, state);
                 case 2:
                     return new AboutFragment();
             }
-            return PlaceholderFragment.newInstance(userid, state);
+            return null;
         }
 
         @Override
@@ -151,40 +151,27 @@ public class MainActivity extends AppCompatActivity {
         public CharSequence getPageTitle(int position) {
             switch (position) {
                 case 0:
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        myDrawable = getResources().getDrawable(R.mipmap.ic_email_white_24dp, getApplicationContext().getTheme());
-                    } else {
-                        myDrawable = getResources().getDrawable(R.mipmap.ic_email_white_24dp);
-                    }
-                    title = "New";
-                    break;
+                    return "New";
                 case 1:
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        myDrawable = getResources().getDrawable(R.mipmap.ic_history_white_24dp, getApplicationContext().getTheme());
-                    } else {
-                        myDrawable = getResources().getDrawable(R.mipmap.ic_history_white_24dp);
-                    }
-                    title = "History";
-                    break;
+                    return  "History";
                 case 2:
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        myDrawable = getResources().getDrawable(R.mipmap.ic_info_outline_white_24dp, getApplicationContext().getTheme());
-                    } else {
-                        myDrawable = getResources().getDrawable(R.mipmap.ic_info_outline_white_24dp);
-                    }
-                    title = "About";
-                    break;
+                    return "About";
             }
-            SpannableString sb = new SpannableString("   " + title); // space added before text for convenience
-            //try {
-            myDrawable.setBounds(5, 5, myDrawable.getIntrinsicWidth(), myDrawable.getIntrinsicHeight());
-            ImageSpan span = new ImageSpan(myDrawable, DynamicDrawableSpan.ALIGN_BOTTOM);
-            sb.setSpan(span, 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            //} catch (Exception e) {
-            // TODO: handle exception
-            // }
 
-            return sb;
+            return null;
+        }
+
+        public int getIcon(int position){
+            switch (position) {
+                case 0:
+                    return R.mipmap.ic_email_white_24dp;
+                case 1:
+                    return  R.mipmap.ic_history_white_24dp;
+                case 2:
+                    return R.mipmap.ic_info_outline_white_24dp;
+            }
+
+            return R.mipmap.ic_email_white_24dp;
         }
     }
 
@@ -254,6 +241,7 @@ public class MainActivity extends AppCompatActivity {
                         public void onResponse(JSONArray response) {
                             Log.d(TAG, response.toString());
                             hidePDialog();
+                            mailList.clear();
 
                             for (int i = 0; i < response.length(); i++){
                                 try {
