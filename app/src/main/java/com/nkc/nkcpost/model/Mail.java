@@ -7,20 +7,16 @@ package com.nkc.nkcpost.model;
 import java.util.ArrayList;
 
 public class Mail {
-    private String title, thumbnailUrl;
-    private int year;
-    private double rating;
-    private ArrayList<String> genre;
+    private String title, number, emsid, datetime;
 
     public Mail() {
     }
 
-    public Mail(String name, String thumbnailUrl, int year, double rating, ArrayList<String> genre) {
+    public Mail(String name, String number, String emsid, String datetime) {
         this.title = name;
-        this.thumbnailUrl = thumbnailUrl;
-        this.year = year;
-        this.rating = rating;
-        this.genre = genre;
+        this.number = number;
+        this.emsid = emsid;
+        this.datetime = datetime;
     }
 
     public String getTitle() {
@@ -31,35 +27,27 @@ public class Mail {
         this.title = name;
     }
 
-    public String getThumbnailUrl() {
-        return thumbnailUrl;
+    public String getNumber() {
+        return number;
     }
 
-    public void setThumbnailUrl(String thumbnailUrl) {
-        this.thumbnailUrl = thumbnailUrl;
+    public void setNumber(String number) {
+        this.number = number;
     }
 
-    public int getYear() {
-        return year;
+    public String getEmsid() {
+        return emsid;
     }
 
-    public void setYear(int year) {
-        this.year = year;
+    public void setEmsid(String emsid) {
+        this.emsid = emsid;
     }
 
-    public double getRating() {
-        return rating;
+    public String getDatetime() {
+        return datetime;
     }
 
-    public void setRating(double rating) {
-        this.rating = rating;
-    }
-
-    public ArrayList<String> getGenre() {
-        return genre;
-    }
-
-    public void setGenre(ArrayList<String> genre) {
-        this.genre = genre;
+    public void setDatetime(String datetime) {
+        this.datetime = datetime;
     }
 }

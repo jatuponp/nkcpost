@@ -24,7 +24,7 @@ public class CustomListAdapter extends BaseAdapter {
     private List<Mail> mailItems;
     //ImageLoader imageLoader = AppController.getInstance().getImageLoader();
 
-    public CustomListAdapter(Activity activity, List<Mail> movieItems) {
+    public CustomListAdapter(Activity activity, List<Mail> mailItems) {
         this.activity = activity;
         this.mailItems = mailItems;
     }
@@ -53,38 +53,25 @@ public class CustomListAdapter extends BaseAdapter {
         if (convertView == null)
             convertView = inflater.inflate(R.layout.list_row, null);
 
-        //if (imageLoader == null)
-        //    imageLoader = AppController.getInstance().getImageLoader();
-        //NetworkImageView thumbNail = (NetworkImageView) convertView
-        //        .findViewById(R.id.thumbnail);
         TextView title = (TextView) convertView.findViewById(R.id.title);
-        TextView rating = (TextView) convertView.findViewById(R.id.rating);
-        TextView genre = (TextView) convertView.findViewById(R.id.genre);
-        TextView year = (TextView) convertView.findViewById(R.id.releaseYear);
+        TextView number = (TextView) convertView.findViewById(R.id.number);
+        TextView emsid = (TextView) convertView.findViewById(R.id.emsid);
+        TextView datetime = (TextView) convertView.findViewById(R.id.datetime);
 
         // getting movie data for the row
         Mail m = mailItems.get(position);
 
-        // thumbnail image
-        //thumbNail.setImageUrl(m.getThumbnailUrl(), imageLoader);
+        // Number
+        number.setText(m.getNumber());
 
         // title
         title.setText(m.getTitle());
 
-        // rating
-        rating.setText("Rating: " + String.valueOf(m.getRating()));
-
-        // genre
-        String genreStr = "";
-        for (String str : m.getGenre()) {
-            genreStr += str + ", ";
-        }
-        genreStr = genreStr.length() > 0 ? genreStr.substring(0,
-                genreStr.length() - 2) : genreStr;
-        genre.setText(genreStr);
+        // number
+        emsid.setText("ID: " + m.getEmsid());
 
         // release year
-        year.setText(String.valueOf(m.getYear()));
+        datetime.setText("Date: " + m.getDatetime());
 
         return convertView;
     }

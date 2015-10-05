@@ -1,10 +1,8 @@
 package com.nkc.nkcpost;
 
-import android.content.Context;
-import android.content.Intent;
+import android.app.ProgressDialog;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.renderscript.Allocation;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -14,29 +12,33 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.text.SpannableString;
-import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.DynamicDrawableSpan;
 import android.text.style.ImageSpan;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
-import android.widget.TextView;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
+import com.android.volley.Request.Method;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.nkc.nkcpost.model.Mail;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
@@ -49,6 +51,12 @@ public class MainActivity extends AppCompatActivity {
      * may be best to switch to a
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
+    private static final String TAG = MainActivity.class.getSimpleName();
+
+    public static final String KEY_USERID = "userid";
+    public static final String KEY_STATUS = "status";
+
+
     private SectionsPagerAdapter mSectionsPagerAdapter;
 
     /**
@@ -115,18 +123,22 @@ public class MainActivity extends AppCompatActivity {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
             //getInbox("5470890004657","0");
-            //return PlaceholderFragment.newInstance(position + 1);
+            //return PlaceholderFragment.newInstance(position + 1, "5470890004657", "0");
+            String state = "0";
+            String userid = "";
             switch (position){
                 case 0:
-                    getInbox("5470890004657","0");
-                    return NewFragment.newInstance("saf","adf");
+                    state = "0";
+                    userid = "563410045-6";
+                    break;
                 case 1:
-                    return NewFragment.newInstance("af","asdf");
+                    state = "1";
+                    userid = "563410045-6";
+                    break;
                 case 2:
-                    return AboutFragment.newInstance();
-
+                    return new AboutFragment();
             }
-            return null;
+            return PlaceholderFragment.newInstance(userid, state);
         }
 
         @Override
@@ -182,21 +194,32 @@ public class MainActivity extends AppCompatActivity {
     /**
      * A placeholder fragment containing a simple view.
      */
+
+
+
     public static class PlaceholderFragment extends Fragment {
         /**
          * The fragment argument representing the section number for this
          * fragment.
          */
         private static final String ARG_SECTION_NUMBER = "section_number";
+        private static String ARG_USERID = null;
+        private static String ARG_STATUS = null;
 
+        private List<Mail> mailList = new ArrayList<Mail>();
+        private ListView listView;
+        private CustomListAdapter adapter;
+
+        private ProgressDialog pDialog;
         /**
          * Returns a new instance of this fragment for the given section
          * number.
          */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
+        public static PlaceholderFragment newInstance(String userid, String status) {
             PlaceholderFragment fragment = new PlaceholderFragment();
             Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
+            args.putString(ARG_USERID, userid);
+            args.putString(ARG_STATUS, status);
             fragment.setArguments(args);
             return fragment;
         }
@@ -207,69 +230,77 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            TextView textView = (TextView) rootView.findViewById(R.id.section_label);
-            textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
+            listView = (ListView) rootView.findViewById(R.id.list);
+            adapter = new CustomListAdapter(getActivity(), mailList);
+            listView.setAdapter(adapter);
+
+            pDialog = new ProgressDialog(getActivity());
+            pDialog.setMessage("Loading ...");
+            pDialog.show();
+
+            JsonArrayRequest mailReq = new JsonArrayRequest(Method.POST, AppConfig.URL_INBOX + "?userid=" + getArguments().getString(ARG_USERID) + "&status=" + getArguments().getString(ARG_STATUS),
+                    new Response.Listener<JSONArray>() {
+                        @Override
+                        public void onResponse(JSONArray response) {
+                            Log.d(TAG, response.toString());
+                            hidePDialog();
+
+                            for (int i = 0; i < response.length(); i++){
+                                try {
+                                    JSONObject obj = response.getJSONObject(i);
+                                    Mail mail = new Mail();
+                                    mail.setNumber(obj.getString("number"));
+                                    mail.setTitle(obj.getString("title"));
+                                    mail.setEmsid(obj.getString("emsid"));
+                                    mail.setDatetime(obj.getString("datetime"));
+
+                                    mailList.add(mail);
+
+                                } catch (JSONException e){
+                                    e.printStackTrace();
+                                }
+                            }
+
+                            adapter.notifyDataSetChanged();
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Log.d(TAG, "Error: " + error.getMessage());
+                            Toast.makeText(getActivity(), error.getMessage(), Toast.LENGTH_LONG).show();
+                            hidePDialog();
+                        }
+
+                    }
+            ){
+                @Override
+                protected Map<String, String> getParams(){
+                    // Posting parameters to getInbox url
+                    Map<String, String> params = new HashMap<String, String>();
+                    params.put(KEY_USERID, getArguments().getString(ARG_USERID));
+                    params.put(KEY_STATUS, getArguments().getString(ARG_STATUS));
+                    return params;
+                }
+            };
+
+            AppController.getInstance().addToRequestQueue(mailReq, "getInbox");
+
             return rootView;
         }
-    }
 
-    private void getInbox(final String StudentId, final String Status) {
-        // Tag used to cancel the request
-        String tag_string_req = "req_login";
+        @Override
+        public void onDestroy() {
+            super.onDestroy();
+            hidePDialog();
+        }
 
-        StringRequest strReq = new StringRequest(Request.Method.POST, AppConfig.URL_LOGIN, new Response.Listener<String>() {
-
-            @Override
-            public void onResponse(String response) {
-                //Log.d(TAG, "Login Response: " + response.toString());
-
-                try {
-                    JSONObject jObj = new JSONObject(response);
-                    System.out.println(jObj);
-                    boolean error = jObj.getBoolean("error");
-
-                    // Check for error node in json
-                    if (!error) {
-                        // user successfully logged in
-                        // Create login session
-                        finish();
-                    } else {
-                        // Error in login. Get the error message
-                        String errorMsg = jObj.getString("error_msg");
-                        Toast.makeText(getApplicationContext(),
-                                errorMsg, Toast.LENGTH_LONG).show();
-                    }
-                } catch (JSONException e) {
-                    // JSON error
-                    e.printStackTrace();
-                    Toast.makeText(getApplicationContext(), "Json error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                }
-
+        private void hidePDialog() {
+            if (pDialog != null) {
+                pDialog.dismiss();
+                pDialog = null;
             }
-        }, new Response.ErrorListener() {
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                //Log.e(TAG, "Login Error: " + error.getMessage());
-                Toast.makeText(getApplicationContext(),
-                        error.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        }) {
-
-            @Override
-            protected Map<String, String> getParams() {
-                // Posting parameters to login url
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("studentid", StudentId);
-                params.put("status", Status);
-
-                return params;
-            }
-
-        };
-
-        // Adding request to request queue
-        AppController.getInstance().addToRequestQueue(strReq, tag_string_req);
+        }
 
     }
 }
