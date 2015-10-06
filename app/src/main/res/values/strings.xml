@@ -1,12 +1,13 @@
 <resources>
     <string name="app_name">NKC Post</string>
+    <string name="app_mainname">NKC Postal Check</string>
     <string name="action_settings">Settings</string>
     <string name="section_format">Hello World from section: %1$d</string>
 
     <string name="title_activity_splash">SplashActivity</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
-    <string name="company_name">มหาวิทยาลัยขอนแก่น วิทยาเขตหนองคาย</string>
+    <string name="company_name">Khon Kaen University, Nong Khai Campus.</string>
     <string name="title_activity_login">LoginActivity</string>
     <string name="hint_username">Username</string>
     <string name="hint_password">Password</string>
@@ -18,7 +19,8 @@
     <string name="welcome">Welcome</string>
     <string name="btn_logout">LOGOUT</string>
     <string name="name">Fullname</string>
+    <string name="maillist">Postal Items</string>
 
-<!-- TODO: Remove or change this placeholder text -->
+    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

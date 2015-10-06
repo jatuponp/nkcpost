@@ -11,16 +11,40 @@
     <TextView
         android:id="@+id/section_label"
         android:layout_width="wrap_content"
-        android:text="รายการพัสดุ ไปรษณ๊ย์"
-        android:textSize="20dp"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:text="@string/maillist"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/user_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/section_label"
+        android:divider="@color/list_divider"
+        android:textSize="18sp" />
 
     <ListView
         android:id="@+id/list"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/user_name"
         android:divider="@color/list_divider"
-        android:layout_below="@id/section_label"
         android:dividerHeight="1dp" />
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/recomment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/list"
+            android:text="*** สามารถติดต่อขอรับไปรษณีย์ที่งานอำนวยการ อาคารบริหาร โดยแจ้งรหัสรับ กับเจ้าหน้าที่"
+            android:textSize="18sp" />
+
+    </LinearLayout>
 
 </RelativeLayout>

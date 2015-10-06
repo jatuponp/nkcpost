@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-
 public class AboutFragment extends Fragment {
     public static AboutFragment newInstance() {
         AboutFragment fragment = new AboutFragment();

@@ -1,32 +1,86 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" tools:context="com.nkc.nkcpost.AboutFragment">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.nkc.nkcpost.AboutFragment">
 
     <LinearLayout
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_gravity="center"
         android:orientation="vertical"
         android:paddingLeft="20dp"
-        android:paddingRight="20dp" >
+        android:paddingRight="20dp"
+        android:weightSum="1">
 
         <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/imageView"
-            android:src="@mipmap/ic_kkulogo"
-            android:layout_centerVertical="true"
-            android:layout_centerHorizontal="true"
-            android:layout_gravity="center_horizontal" />
+            android:layout_width="192dp"
+            android:layout_height="192dp"
+            android:id="@+id/imageView2"
+            android:layout_gravity="center_horizontal"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:layout_marginTop="30dp"
+            android:src="@drawable/ic_kku" />
 
         <TextView
+            android:id="@+id/textView2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="เข้าสู่ระบบด้วยบัญชีผู้ใช้ของมหาวิทยาลัยขอนแก่น"
+            android:layout_gravity="center_horizontal"
             android:layout_marginTop="10dip"
-            android:id="@+id/textView2"
-            android:layout_gravity="center_horizontal" />
+            android:text="ระบบตรวจสอบและแจ้งเตือนไปรษณีย์ มหาวิทยาลัยขอนแก่น วิทยาเขตหนองคาย"
+            android:textAlignment="center"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <TextView
+            android:id="@+id/textView4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="เวอร์ชั่น: 1.0 Alpha"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="20dip"
+            android:text="ผู้พัฒนา: นาจตุพล โพธิ์คำพก"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <TextView
+        android:id="@+id/textView5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="นักวิชาการคอมพิวเตอร์"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <TextView
+            android:id="@+id/textView7"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="หน่วยเทคโนโลยีสารสนเทศ"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <TextView
+            android:id="@+id/textView8"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="งานอำนวยการ สำนักงานวิทยาเขตหนองคาย"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <TextView
+            android:id="@+id/textView6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="ติดต่อ แจ้งปัญหาการใช้งานที่ 0868575354"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
 
     </LinearLayout>
 

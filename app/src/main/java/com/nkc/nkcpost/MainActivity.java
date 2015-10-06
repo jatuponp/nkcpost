@@ -1,20 +1,15 @@
 package com.nkc.nkcpost;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
-import android.text.SpannableString;
-import android.text.Spanned;
-import android.text.style.DynamicDrawableSpan;
-import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,13 +18,15 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
 import com.android.volley.Request.Method;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.nkc.nkcpost.helper.SQLiteHandler;
+import com.nkc.nkcpost.helper.SessionManager;
 import com.nkc.nkcpost.model.Mail;
 
 import org.json.JSONArray;
@@ -52,6 +49,8 @@ public class MainActivity extends AppCompatActivity {
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
     private static final String TAG = MainActivity.class.getSimpleName();
+    private SQLiteHandler db;
+    private SessionManager session;
 
 
     private SectionsPagerAdapter mSectionsPagerAdapter;
@@ -66,6 +65,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        session = new SessionManager(getApplicationContext());
+        if(!session.isLoggedIn()){
+            logoutUser();
+        }
+
+        db = new SQLiteHandler(getApplicationContext());
+
+        //HashMap<String, String> user = db.getUserDetails();
+
 //        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 //        setSupportActionBar(toolbar);
         // Create the adapter that will return a fragment for each of the three
@@ -79,6 +87,21 @@ public class MainActivity extends AppCompatActivity {
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
+    }
+
+    /**
+     * Logging out the user. Will set isLoggedIn flag to false in shared
+     * preferences Clears the user data from sqlite users table
+     * */
+    private void logoutUser() {
+        session.setLogin(false);
+
+        db.deleteUsers();
+
+        // Launching the login activity
+        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+        startActivity(intent);
+        finish();
     }
 
 
@@ -98,7 +121,8 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_power) {
-            return true;
+            logoutUser();
+            //return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -126,12 +150,10 @@ public class MainActivity extends AppCompatActivity {
             switch (position){
                 case 0:
                     state = "0";
-                    userid = "563410045-6";
-                    return PlaceholderFragment.newInstance(userid, state);
+                    return PlaceholderFragment.newInstance(state);
                 case 1:
                     state = "1";
-                    userid = "563410045-6";
-                    return PlaceholderFragment.newInstance(userid, state);
+                    return PlaceholderFragment.newInstance(state);
                 case 2:
                     return new AboutFragment();
             }
@@ -195,16 +217,17 @@ public class MainActivity extends AppCompatActivity {
         private List<Mail> mailList = new ArrayList<Mail>();
         private ListView listView;
         private CustomListAdapter adapter;
+        private TextView _user_name;
 
         private ProgressDialog pDialog;
+        private SQLiteHandler db1;
         /**
          * Returns a new instance of this fragment for the given section
          * number.
          */
-        public static PlaceholderFragment newInstance(String userid, String status) {
+        public static PlaceholderFragment newInstance(String status) {
             PlaceholderFragment fragment = new PlaceholderFragment();
             Bundle args = new Bundle();
-            args.putString(ARG_USERID, userid);
             args.putString(ARG_STATUS, status);
             fragment.setArguments(args);
             return fragment;
@@ -216,6 +239,14 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+            _user_name = (TextView) rootView.findViewById(R.id.user_name);
+
+            db1 = new SQLiteHandler(getActivity());
+
+            // Fetching user details from sqlite
+            HashMap<String, String> user = db1.getUserDetails();
+            _user_name.setText("Name: " + user.get("name"));
+
             listView = (ListView) rootView.findViewById(R.id.list);
             adapter = new CustomListAdapter(getActivity(), mailList);
             listView.setAdapter(adapter);
@@ -224,12 +255,9 @@ public class MainActivity extends AppCompatActivity {
             pDialog.setMessage("Loading ...");
             pDialog.show();
 
-            System.out.println("User ID = " + getArguments().getString(ARG_USERID));
-            System.out.println(getArguments().getString(ARG_STATUS));
-
             JSONObject obj = new JSONObject();
             try {
-                obj.put("userid", getArguments().getString(ARG_USERID));
+                obj.put("userid", user.get("uid"));
                 obj.put("status", getArguments().getString(ARG_STATUS));
             }catch (JSONException e){
                 System.out.print(e.getMessage());
@@ -280,11 +308,7 @@ public class MainActivity extends AppCompatActivity {
                     params.put(ARG_STATUS, getArguments().getString(ARG_STATUS));
                     return params;
                 }
-//
-//                @Override
-//                public int getMethod() {
-//                    return Method.POST;
-//                }
+
             };
 
             AppController.getInstance().addToRequestQueue(mailReq, "getInbox");

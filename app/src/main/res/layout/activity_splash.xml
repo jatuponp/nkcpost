@@ -9,11 +9,12 @@
     tools:context="com.example.jumpon_pc.myapplication.SplashActivity">
 
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="223dp"
+        android:layout_height="350dp"
         android:id="@+id/imageView"
-        android:src="@mipmap/ic_kkunkc"
+        android:src="@drawable/ic_kkunkc"
         android:layout_centerVertical="true"
+        android:adjustViewBounds="true"
         android:layout_centerHorizontal="true" />
 
 </RelativeLayout>
