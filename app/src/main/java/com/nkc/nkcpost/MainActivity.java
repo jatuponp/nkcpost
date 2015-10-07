@@ -30,7 +30,10 @@ import com.android.volley.Request.Method;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
+import com.google.android.gms.iid.InstanceID;
 import com.nkc.nkcpost.helper.SQLiteHandler;
 import com.nkc.nkcpost.helper.SessionManager;
 import com.nkc.nkcpost.model.Mail;
@@ -44,6 +47,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -67,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
     GoogleCloudMessaging gcm;
     SharedPreferences prefs;
     Context context;
+    AtomicInteger msgId = new AtomicInteger();
     String SENDER_ID = "90267907696";
 
     private SectionsPagerAdapter mSectionsPagerAdapter;
@@ -82,29 +87,25 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        session = new SessionManager(getApplicationContext());
+        context = getApplicationContext();
+        session = new SessionManager(context);
         if (!session.isLoggedIn()) {
             logoutUser();
         }
 
-        db = new SQLiteHandler(getApplicationContext());
+        db = new SQLiteHandler(context);
 
-        context = getApplicationContext();
-        gcm = GoogleCloudMessaging.getInstance(this);
-        regid = getRegistrationId(context);
-        if(regid.isEmpty()){
-            registerInBackground();
-//            try {
-//                regid = gcm.register(SENDER_ID);
-//                Log.d(TAG, regid.toString());
-//            }catch (IOException ex){
-//
+
+        //if(checkPlayServices(context)) {
+//            gcm = GoogleCloudMessaging.getInstance(context);
+//            regid = getRegistrationId(context);
+//            if (regid.isEmpty()) {
+//                registerInBackground();
 //            }
-        }
+//        }else{
+//            Log.i(TAG,"No valid Google Play Services APK found.");
+//        }
 
-//        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
@@ -118,6 +119,14 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private static boolean checkPlayServices(Context context) {
+        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(context);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            return false;
+        }
+        return true;
+    }
+
     private void registerInBackground(){
         new AsyncTask<Void, Void, String>(){
             @Override
@@ -127,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
                     if(gcm == null){
                         gcm = GoogleCloudMessaging.getInstance(context);
                     }
-                    regid = gcm.register(SENDER_ID);
+                    regid = gcm.register("90267907696");
                     msg = "Device registered, registration ID= " + regid;
 
                     // You should send the registration ID to your server over HTTP,
