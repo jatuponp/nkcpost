@@ -36,4 +36,12 @@
     <string name="server_register_error">Could not register device on Demo Server after %1$d attempts.</string>
     <string name="server_unregister_error">Could not unregister device on Demo Server (%1$s).</string>
 
+    <string name="gcm_send_message">Token retrieved and sent to server! You can now use gcmsender to
+        send downstream messages to this app.</string>
+    <string name="registering_message">Generating InstanceID token...</string>
+    <string name="token_error_message">An error occurred while either fetching the InstanceID token,
+        sending the fetched token to the server or subscribing to the PubSub topic. Please try
+        running the sample again.</string>
+    <string name="gcm_defaultSenderId">90267907696</string>
+
 </resources>
