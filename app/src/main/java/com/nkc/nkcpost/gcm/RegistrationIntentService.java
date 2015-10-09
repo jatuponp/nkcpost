@@ -12,6 +12,7 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
 import com.nkc.nkcpost.AppConfig;
 import com.nkc.nkcpost.R;
+import com.nkc.nkcpost.helper.SQLiteHandler;
 
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
@@ -36,6 +37,7 @@ import javax.net.ssl.SSLContext;
 public class RegistrationIntentService extends IntentService {
     private static final String TAG = "RegIntentService";
     private static final String[] TOPICS = {"global"};
+    private SQLiteHandler db;
 
     public RegistrationIntentService() {
         super(TAG);
@@ -66,12 +68,14 @@ public class RegistrationIntentService extends IntentService {
             // sent to your server. If the boolean is false, send the token to your server,
             // otherwise your server should have already received the token.
             sharedPreferences.edit().putBoolean(QuickstartPreferences.SENT_TOKEN_TO_SERVER, true).apply();
+            sharedPreferences.edit().putString(QuickstartPreferences.TOKEN_ID, token).apply();
             // [END register_for_gcm]
         } catch (Exception e) {
             Log.d(TAG, "Failed to complete token refresh", e);
             // If an exception happens while fetching the new token or updating our registration data
             // on a third-party server, this ensures that we'll attempt the update at a later time.
             sharedPreferences.edit().putBoolean(QuickstartPreferences.SENT_TOKEN_TO_SERVER, false).apply();
+            sharedPreferences.edit().putString(QuickstartPreferences.TOKEN_ID, "").apply();
         }
         // Notify UI that registration has completed, so the progress indicator can be hidden.
         Intent registrationComplete = new Intent(QuickstartPreferences.REGISTRATION_COMPLETE);
@@ -87,11 +91,15 @@ public class RegistrationIntentService extends IntentService {
      * @param token The new token.
      */
     private void sendRegistrationToServer(String token) {
+        db = new SQLiteHandler(this);
+
+        // Fetching user details from sqlite
+        HashMap<String, String> user = db.getUserDetails();
         // Add custom implementation, as needed.
         Map<String, String> params = new HashMap<String, String>();
         params.put("regId", token);
-        params.put("name", "pjatuon");
-        params.put("email", "pjatupon@kku.ac.th");
+        params.put("name", user.get("name"));
+        params.put("userId", user.get("uid"));
 
         String serverUrl = AppConfig.URL_REGISTER;
         try {
@@ -131,15 +139,10 @@ public class RegistrationIntentService extends IntentService {
         String body = bodyBuilder.toString();
         Log.v(TAG, "Posting '" + body + "' to " + url);
         byte[] bytes = body.getBytes();
-        HttpsURLConnection conn = null;
+        HttpURLConnection conn = null;
         try {
             Log.e("URL", "> " + url);
-            conn = (HttpsURLConnection) url.openConnection();
-            // Create the SSL connection
-            SSLContext sc;
-            sc = SSLContext.getInstance("TLS");
-            sc.init(null, null, new java.security.SecureRandom());
-            conn.setSSLSocketFactory(sc.getSocketFactory());
+            conn = (HttpURLConnection) url.openConnection();
             conn.setDoOutput(true);
             conn.setUseCaches(false);
             conn.setFixedLengthStreamingMode(bytes.length);
@@ -147,8 +150,7 @@ public class RegistrationIntentService extends IntentService {
             conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
             conn.connect();
             // post the request
-            //OutputStream out = conn.getOutputStream();
-            DataOutputStream out = new DataOutputStream(conn.getOutputStream());
+            OutputStream out = conn.getOutputStream();
             out.write(bytes);
             out.flush();
             out.close();

@@ -21,24 +21,24 @@ public class MyGcmListenerService extends GcmListenerService {
     private static final String TAG = "MyGcmListenerService";
 
     /**
-     * Called when message is received.
-     *
-     * @param from SenderID of the sender.
-     * @param data Data bundle containing message data as key/value pairs.
-     *             For Set of keys use data.keySet().
-     */
-    // [START receive_message]
-    @Override
-    public void onMessageReceived(String from, Bundle data) {
-        String message = data.getString("message");
-        Log.d(TAG, "From: " + from);
-        Log.d(TAG, "Message: " + message);
+         * Called when message is received.
+         *
+         * @param from SenderID of the sender.
+         * @param data Data bundle containing message data as key/value pairs.
+         *             For Set of keys use data.keySet().
+         */
+        // [START receive_message]
+        @Override
+        public void onMessageReceived(String from, Bundle data) {
+            String message = data.getString("message");
+            Log.d(TAG, "From: " + from);
+            Log.d(TAG, "Message: " + message);
 
-        if (from.startsWith("/topics/")) {
-            // message received from some topic.
-        } else {
-            // normal downstream message.
-        }
+            if (from.startsWith("/topics/")) {
+                // message received from some topic.
+            } else {
+                // normal downstream message.
+            }
 
         // [START_EXCLUDE]
         /**
@@ -70,8 +70,8 @@ public class MyGcmListenerService extends GcmListenerService {
 
         Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
-                .setSmallIcon(R.drawable.cast_ic_notification_on)
-                .setContentTitle("GCM Message")
+                .setSmallIcon(R.mipmap.ic_email_white_24dp)
+                .setContentTitle("NKCPostal Check")
                 .setContentText(message)
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)

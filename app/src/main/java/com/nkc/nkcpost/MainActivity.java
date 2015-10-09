@@ -8,6 +8,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v4.app.Fragment;
@@ -35,6 +36,7 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
+import com.nkc.nkcpost.gcm.QuickstartPreferences;
 import com.nkc.nkcpost.gcm.RegistrationIntentService;
 import com.nkc.nkcpost.helper.SQLiteHandler;
 import com.nkc.nkcpost.helper.SessionManager;
@@ -45,8 +47,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -98,16 +105,11 @@ public class MainActivity extends AppCompatActivity {
         db = new SQLiteHandler(context);
 
 
-        if(checkPlayServices()) {
-//            gcm = GoogleCloudMessaging.getInstance(context);
-//            regid = getRegistrationId(context);
-//            if (regid.isEmpty()) {
-//                registerInBackground();
-//            }
+        if (checkPlayServices()) {
             Intent intent = new Intent(this, RegistrationIntentService.class);
             startService(intent);
-        }else{
-            Log.i(TAG,"No valid Google Play Services APK found.");
+        } else {
+            Log.i(TAG, "No valid Google Play Services APK found.");
         }
 
         // Create the adapter that will return a fragment for each of the three
@@ -144,120 +146,94 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    private void registerInBackground(){
-        new AsyncTask<Void, Void, String>(){
-            @Override
-            protected String doInBackground(Void... params){
-                String msg = "";
-                try{
-                    if(gcm == null){
-                        gcm = GoogleCloudMessaging.getInstance(context);
-                    }
-                    regid = gcm.register("90267907696");
-                    msg = "Device registered, registration ID= " + regid;
-
-                    // You should send the registration ID to your server over HTTP,
-                    // so it can use GCM/HTTP or CCS to send messages to your app.
-                    // The request to your server should be authenticated if your app
-                    // is using accounts.
-                    sendRegistrationIdToBackend();
-
-                    // For this demo: we don't need to send it because the device
-                    // will send upstream messages to a server that echo back the
-                    // message using the 'from' address in the message.
-
-                    // Persist the registration ID - no need to register again.
-                    storeRegistrationId(context, regid);
-
-                }catch (IOException ex){
-                    msg = "Error: " + ex.getMessage();
-                }
-                return msg;
-            }
-
-            @Override
-            protected void onPostExecute(String msg){
-                //
-            }
-
-        }.execute(null,null,null);
-    }
-
-    private void sendRegistrationIdToBackend() {
-        // Your implementation here.
-    }
-
-    /**
-     * Stores the registration ID and app versionCode in the application's
-     * {@code SharedPreferences}.
-     *
-     * @param context application's context.
-     * @param regId registration ID
-     */
-    private void storeRegistrationId(Context context, String regId) {
-        final SharedPreferences prefs = getGCMPreferences(context);
-        int appVersion = getAppVersion(context);
-        Log.i(TAG, "Saving regId on app version " + appVersion);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(PROPERTY_REG_ID, regId);
-        editor.putInt(PROPERTY_APP_VERSION, appVersion);
-        editor.commit();
-    }
-
-    private String getRegistrationId(Context context) {
-        final SharedPreferences prefs = getGCMPreferences(context);
-        String registrationId = prefs.getString(PROPERTY_REG_ID, "");
-        if (registrationId.isEmpty()) {
-            Log.i(TAG, "Registration not found");
-            return "";
-        }
-
-        int regiseredVersion = prefs.getInt(PROPERTY_APP_VERSION, Integer.MIN_VALUE);
-        int currentVersion = getAppVersion(context);
-        if (regiseredVersion != currentVersion) {
-            Log.i(TAG, "App version changed.");
-            return "";
-        }
-        return registrationId;
-    }
-
-    /**
-     * @return Application's {@code SharedPreferences}.
-     */
-    private SharedPreferences getGCMPreferences(Context context) {
-        // This sample app persists the registration ID in shared preferences, but
-        // how you store the registration ID in your app is up to you.
-        return getSharedPreferences(MainActivity.class.getSimpleName(),
-                Context.MODE_PRIVATE);
-    }
-
-    /**
-     * @return Application's version code from the {@code PackageManager}.
-     */
-    private static int getAppVersion(Context context) {
-        try {
-            PackageInfo packageInfo = context.getPackageManager()
-                    .getPackageInfo(context.getPackageName(), 0);
-            return packageInfo.versionCode;
-        } catch (PackageManager.NameNotFoundException e) {
-            // should never happen
-            throw new RuntimeException("Could not get package name: " + e);
-        }
-    }
-
     /**
      * Logging out the user. Will set isLoggedIn flag to false in shared
      * preferences Clears the user data from sqlite users table
      */
     private void logoutUser() {
-        session.setLogin(false);
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
+        try {
+            String token = sharedPreferences.getString(QuickstartPreferences.TOKEN_ID, null);
+            // Fetching user details from sqlite
+            HashMap<String, String> user = db.getUserDetails();
+            // Add custom implementation, as needed.
+            Map<String, String> params = new HashMap<String, String>();
+            params.put("regId", token);
+            params.put("userId", user.get("uid"));
+
+            String serverUrl = AppConfig.URL_UNREGISTER;
+            try {
+                post(serverUrl, params);
+                sharedPreferences.edit().putBoolean(QuickstartPreferences.SENT_TOKEN_TO_SERVER, false).apply();
+            } catch (Exception ex) {
+                Log.e(TAG, "Failed to unregister on attempt " + ex.getMessage());
+            }
+        } catch (Exception ex) {
+            Log.d("Except", "Failed to complete token refresh" + ex.getMessage());
+        }
+
+        session.setLogin(false);
         db.deleteUsers();
 
         // Launching the login activity
         Intent intent = new Intent(MainActivity.this, LoginActivity.class);
         startActivity(intent);
         finish();
+    }
+
+    private static void post(String endpoint, Map<String, String> params) throws Exception {
+        URL url;
+        try {
+            url = new URL(endpoint);
+        } catch (MalformedURLException e) {
+            throw new IllegalArgumentException("invalid url: " + endpoint);
+        }
+        StringBuilder bodyBuilder = new StringBuilder();
+        Iterator<Map.Entry<String, String>> iterator = params.entrySet().iterator();
+        // constructs the POST body using the parameters
+        while (iterator.hasNext()) {
+            Map.Entry<String, String> param = iterator.next();
+            bodyBuilder.append(param.getKey()).append('=')
+                    .append(param.getValue());
+            if (iterator.hasNext()) {
+                bodyBuilder.append('&');
+            }
+        }
+        String body = bodyBuilder.toString();
+        Log.v(TAG, "Posting '" + body + "' to " + url);
+        byte[] bytes = body.getBytes();
+        HttpURLConnection conn = null;
+        try {
+            Log.e("URL", "> " + url);
+            conn = (HttpURLConnection) url.openConnection();
+
+            conn.setDoOutput(true);
+            conn.setUseCaches(false);
+            conn.setFixedLengthStreamingMode(bytes.length);
+            conn.setRequestMethod("POST");
+            Log.i("connect >", conn.toString());
+            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+            //conn.connect();
+            int status = conn.getResponseCode();
+            Log.i("status", String.valueOf(status));
+
+            // post the request
+            OutputStream out = conn.getOutputStream();
+            out.write(bytes);
+            out.flush();
+            out.close();
+            // handle the response
+            //int status = conn.getResponseCode();
+            //Log.i("status", String.valueOf(status));
+            if (status != 200) {
+                throw new IOException("Post failed with error code " + status);
+            }
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
+        }
     }
 
 

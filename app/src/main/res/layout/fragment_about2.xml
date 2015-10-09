@@ -14,13 +14,13 @@
         android:weightSum="1">
 
         <ImageView
-            android:layout_width="192dp"
-            android:layout_height="192dp"
             android:id="@+id/imageView2"
+            android:layout_width="130dp"
+            android:layout_height="130dp"
             android:layout_gravity="center_horizontal"
-            android:scaleType="fitCenter"
-            android:adjustViewBounds="true"
             android:layout_marginTop="30dp"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_kku" />
 
         <TextView
@@ -51,12 +51,12 @@
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <TextView
-        android:id="@+id/textView5"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:text="นักวิชาการคอมพิวเตอร์"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:id="@+id/textView5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="นักวิชาการคอมพิวเตอร์"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <TextView
             android:id="@+id/textView7"
@@ -64,6 +64,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:text="หน่วยเทคโนโลยีสารสนเทศ"
+            android:textSize="14dp"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <TextView
@@ -72,6 +73,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:text="งานอำนวยการ สำนักงานวิทยาเขตหนองคาย"
+            android:textAlignment="center"
+            android:textSize="14dp"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <TextView
@@ -80,6 +83,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:text="ติดต่อ แจ้งปัญหาการใช้งานที่ 0868575354"
+            android:textAlignment="center"
+            android:textSize="14dp"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
     </LinearLayout>
