@@ -2,6 +2,7 @@ package com.nkc.nkcpost;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
@@ -10,6 +11,7 @@ import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.design.widget.TabLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -182,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
-    private static void post(String endpoint, Map<String, String> params) throws Exception {
+    private static void post(String endpoint, Map<String, String> params) throws IOException {
         URL url;
         try {
             url = new URL(endpoint);
@@ -203,35 +205,30 @@ public class MainActivity extends AppCompatActivity {
         String body = bodyBuilder.toString();
         Log.v(TAG, "Posting '" + body + "' to " + url);
         byte[] bytes = body.getBytes();
-        HttpURLConnection conn = null;
+        HttpURLConnection con = null;
         try {
             Log.e("URL", "> " + url);
-            conn = (HttpURLConnection) url.openConnection();
-
-            conn.setDoOutput(true);
-            conn.setUseCaches(false);
-            conn.setFixedLengthStreamingMode(bytes.length);
-            conn.setRequestMethod("POST");
-            Log.i("connect >", conn.toString());
-            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
-            //conn.connect();
-            int status = conn.getResponseCode();
-            Log.i("status", String.valueOf(status));
+            con = (HttpURLConnection) url.openConnection();
+            con.setDoOutput(true);
+            con.setUseCaches(false);
+            //con.setFixedLengthStreamingMode(bytes.length);
+            con.setRequestMethod("POST");
+            con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
 
             // post the request
-            OutputStream out = conn.getOutputStream();
+            OutputStream out = con.getOutputStream();
             out.write(bytes);
             out.flush();
             out.close();
             // handle the response
-            //int status = conn.getResponseCode();
-            //Log.i("status", String.valueOf(status));
+            int status = con.getResponseCode();
+            Log.i("status", String.valueOf(status));
             if (status != 200) {
                 throw new IOException("Post failed with error code " + status);
             }
         } finally {
-            if (conn != null) {
-                conn.disconnect();
+            if (con != null) {
+                con.disconnect();
             }
         }
     }
@@ -253,7 +250,23 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_power) {
-            logoutUser();
+            //@Override
+            //public void onBackPressed(){
+                new AlertDialog.Builder(this)
+                        .setIcon(android.R.drawable.ic_lock_power_off)
+                        .setTitle("Logout")
+                        .setMessage("Would you like to logout?")
+                        .setPositiveButton("Yes", new DialogInterface.OnClickListener()
+                        {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                logoutUser();
+                            }
+
+                        })
+                        .setNegativeButton("No", null)
+                        .show();
+            //};
             //return true;
         }
 
