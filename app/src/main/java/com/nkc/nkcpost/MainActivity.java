@@ -40,6 +40,7 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
 import com.nkc.nkcpost.gcm.QuickstartPreferences;
 import com.nkc.nkcpost.gcm.RegistrationIntentService;
+import com.nkc.nkcpost.helper.HttpRequest;
 import com.nkc.nkcpost.helper.SQLiteHandler;
 import com.nkc.nkcpost.helper.SessionManager;
 import com.nkc.nkcpost.model.Mail;
@@ -48,8 +49,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -106,6 +109,20 @@ public class MainActivity extends AppCompatActivity {
 
         db = new SQLiteHandler(context);
 
+//        try {
+//            HttpURLConnection conn = (HttpURLConnection) new URL(AppConfig.URL_UNREGISTER).openConnection();
+//            conn.setDoOutput(true);
+//            conn.setUseCaches(false);
+//            //conn.setFixedLengthStreamingMode(requestBody.getBytes().length);
+//            conn.setRequestMethod("POST");
+//            //conn.connect();
+//            Log.i("Status", String.valueOf(conn.getResponseCode()));
+//
+//            conn.disconnect();
+//        }catch (IOException e){
+//            //e.printStackTrace();
+//        }
+
 
         if (checkPlayServices()) {
             Intent intent = new Intent(this, RegistrationIntentService.class);
@@ -154,6 +171,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private void logoutUser() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        doPost();
 
         try {
             String token = sharedPreferences.getString(QuickstartPreferences.TOKEN_ID, null);
@@ -164,9 +182,25 @@ public class MainActivity extends AppCompatActivity {
             params.put("regId", token);
             params.put("userId", user.get("uid"));
 
-            String serverUrl = AppConfig.URL_UNREGISTER;
+            StringBuilder bodyBuilder = new StringBuilder();
+            Iterator<Map.Entry<String, String>> iterator = params.entrySet().iterator();
+            // constructs the POST body using the parameters
+            while (iterator.hasNext()) {
+                Map.Entry<String, String> param = iterator.next();
+                bodyBuilder.append(param.getKey()).append('=')
+                        .append(param.getValue());
+                if (iterator.hasNext()) {
+                    bodyBuilder.append('&');
+                }
+            }
+            String body = bodyBuilder.toString();
+
+            String serverUrl = AppConfig.URL_REGISTER;
             try {
-                post(serverUrl, params);
+                HttpRequest httpRequest = new HttpRequest();
+                //Log.i("respon", String.valueOf(httpRequest.getResponseCode()));
+                httpRequest.doPost(serverUrl, body);
+                //post(serverUrl, params);
                 sharedPreferences.edit().putBoolean(QuickstartPreferences.SENT_TOKEN_TO_SERVER, false).apply();
             } catch (Exception ex) {
                 Log.e(TAG, "Failed to unregister on attempt " + ex.getMessage());
@@ -182,6 +216,59 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(MainActivity.this, LoginActivity.class);
         startActivity(intent);
         finish();
+    }
+
+    private static void doPost() {
+        Thread background = new Thread(new Runnable() {
+            public void run() {
+                try {
+
+                    HashMap<String, String> hm = new HashMap<>();
+                    hm.put("regId", "afafadfaafdasfasfasdfasfasdfsafd");
+                    hm.put("name", "Jatuphol Pocompok");
+                    hm.put("email", "pjatupon@hotmail.com");
+                    URL url = new URL("https://it.nkc.kku.ac.th/frontend/gcm/unregister");
+
+                    StringBuilder bodyBuilder = new StringBuilder();
+                    Iterator<Map.Entry<String, String>> iterator = hm.entrySet().iterator();
+                    // constructs the POST body using the parameters
+                    while (iterator.hasNext()) {
+                        Map.Entry<String, String> param = iterator.next();
+                        bodyBuilder.append(param.getKey()).append('=')
+                                .append(param.getValue());
+                        if (iterator.hasNext()) {
+                            bodyBuilder.append('&');
+                        }
+                    }
+                    String body = bodyBuilder.toString();
+                    Log.v("POST", "Posting '" + body + "' to " + url);
+                    byte[] bytes = body.getBytes();
+
+                    HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                    con.setRequestMethod("POST");
+                    con.setDoOutput(true);
+                    //con.setChunkedStreamingMode(0);
+                    //con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+                    //con.connect();
+//                    OutputStream out = con.getOutputStream();
+//                    Log.i("out", out.toString());
+                    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(con.getOutputStream(), "UTF-8"));
+                    Log.i("bytes", con.getOutputStream().toString());
+                    writer.write(body.toString());
+                    writer.flush();
+                    writer.close();
+                    int status = con.getResponseCode();
+                    Log.e("status", String.valueOf(status));
+
+                } catch (Throwable t) {
+                    // just end the background thread
+                    Log.i("Animation", "Thread  exception " + t);
+                }
+            }
+
+        });
+        // Start Thread
+        background.start();
     }
 
     private static void post(String endpoint, Map<String, String> params) throws IOException {
